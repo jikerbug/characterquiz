@@ -1,51 +1,27 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageAttachment, MessageEmbed } = require('discord.js');
+var { getResponseAboutQuiz, wholePrompt } = require('../functions/quiz');
 
 
 // const url = "https://main-dalle-server-scy6500.endpoint.ainize.ai/generate"
-const url = "https://hf.space/embed/multimodalart/latentdiffusion/+/api/predict/"
+const url = 'https://api.openai.com/v1/completions'
 var request = require('request');
-var getDrawing = require('../functions/getDrawing');
-var randomQuiz = require('../functions/randomQuiz');
-var userQuizDict = require('../functions/randomQuiz');
 
 
+const { MessageEmbed } = require('discord.js');
 
 module.exports = {
-  userQuizDict,
   data: new SlashCommandBuilder()
     .setName('quiz')
-    .setDescription('Replies with ai generated animal quiz by drawing it in many different ways')
+    .setDescription('Replies with character guessing quiz')
                                     ,
   async execute(interaction) {
-        console.log(interaction.user.tag)
+        // console.log(interaction.user.tag)
+        var responseText = await getResponseAboutQuiz();
+        console.log(responseText)
 
-        //await interaction.reply("body");
-        await interaction.deferReply()
 
-
-        const quizDict = randomQuiz('normal');
-
-        var base64Data = await getDrawing(quizDict["description"]);
-  
-        require("fs").writeFile("out.png", base64Data, 'base64', async function(err) {
-          
-          if(err){
-            console.log(err);
-          }
-          const drawing = new MessageAttachment("out.png");
-        
-          const embed = new MessageEmbed()
-            .setDescription('quiz : ' + quizDict["quiz"])
-            .setColor("#5104DB")
-            .setFooter({ text: "drew by Mark in Mars" })
-            .setTimestamp();
-          interaction.followUp({files: [drawing], embeds: [embed]});
-       
-          userQuizDict[`${interaction.user.tag}`] = quizDict
-          console.log(userQuizDict)
- 
-        });     
+        interaction.reply(responseText);
+   
   },
 };
 
